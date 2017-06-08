@@ -5,29 +5,40 @@ package info.niyao.musicbox;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 public class DownloadService extends Service {
     private final String TAG = DownloadService.class.getSimpleName();
+    private DownloadHandler mDownloadHandler;
 
     @Override
-    public int onStartCommand(Intent intent, @IntDef(value = {Service.START_FLAG_REDELIVERY, Service.START_FLAG_RETRY}, flag = true) int flags, int startId) {
-        return super.onStartCommand(intent, flags, startId);
-    }
-    
-    private void downloadSong(String song) {
-        long endtime = System.currentTimeMillis() + 10 * 1000;
-        while (System.currentTimeMillis() < endtime) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+    public void onCreate() {
+        DownloadThread thread = new DownloadThread();
+        thread.setName("DownloadThread");
+        thread.start();
+
+        while(thread.mHandler == null){
+
         }
-        Log.d(TAG, song + " downloaded!");
+        mDownloadHandler = thread.mHandler;
+        mDownloadHandler.setService(this);
     }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        String song = intent.getStringExtra(MainActivity.KEY_SONG);
+        Message message = Message.obtain();
+        message.obj = song;
+        message.arg1 = startId;
+        mDownloadHandler.sendMessage(message);
+
+        return Service.START_REDELIVER_INTENT;
+    }
+
+
 
     @Nullable
     @Override
