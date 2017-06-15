@@ -44,7 +44,7 @@ public class ActivityHandler extends Handler {
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
-                //Change play button to say "Play"
+                // Change play button to say "Play"
                 mMainActivity.changePlayButtonText("Play");
             }
         }
